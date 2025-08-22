@@ -15,8 +15,6 @@ WITH last_year AS (
 	GROUP BY actorid
 	)
 
-
-
 SELECT
 	COALESCE(ly.actor, ty.actor) as actor,
 	COALESCE(ly.actorid, ty.actorid) as actorid,
@@ -31,5 +29,5 @@ SELECT
 		 ELSE ly.quality_class END as quality_class,
 	ty.films IS NOT NULL as is_active,
 	COALESCE(ty.the_year, ly.current_year+1) as current_year
-FROM
-last_year ly FULL OUTER JOIN this_year ty ON ty.actorid = ly.actorid;
+FROM last_year ly 
+FULL OUTER JOIN this_year ty ON ty.actorid = ly.actorid;
