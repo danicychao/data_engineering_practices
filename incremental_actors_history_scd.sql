@@ -1,3 +1,21 @@
+/*
+ * Incremental query for actors_history_scd table
+ *
+ * Purpose:
+ *   Combine previous year SCD data with 
+ *   new incoming data from the actors table.
+ *   Main records are performance quality and 
+ *   active status.
+ * 
+ * Tables:
+ *   - actors_history_scd (source table)
+ *   - actors (source table)
+ *
+ * Types:
+ *   - actor_scd_type: Composite type to bundle quality_class, 
+ *     active status, and period for change handling
+ */
+
 CREATE TYPE actor_scd_type AS (
     quality_class quality_class,
     is_active BOOLEAN,
@@ -5,12 +23,14 @@ CREATE TYPE actor_scd_type AS (
     end_date INTEGER
 );
 
+-- Pull latest SCD records
 WITH last_year_scd AS (
     SELECT * FROM actors_history_scd
     WHERE current_year = 2020 
       AND end_date = 2020
 ),
 
+-- All SCD records ending before previous year
 historical_scd AS (
     SELECT
         actor,
@@ -23,11 +43,13 @@ historical_scd AS (
     WHERE end_date < 2020
 ),
 
+-- Snapshot of actors table next year 
 this_year AS (
     SELECT * FROM actors
     WHERE current_year = 2021
 ),
 
+-- Unchanged records across current and next year
 unchanged_record AS (
     SELECT
         ty.actor,
@@ -42,6 +64,7 @@ unchanged_record AS (
       AND ty.is_active = ly.is_active
 ),
 
+-- Quality or active status change between current and next year
 changed_records AS (
     SELECT
         ty.actor,
@@ -66,6 +89,7 @@ changed_records AS (
        OR ty.is_active <> ly.is_active
 ),
 
+-- Flatten changed_records (so can union with SCD records)
 unnested_changed_records AS (
     SELECT
         actor,
@@ -77,6 +101,7 @@ unnested_changed_records AS (
     FROM changed_records
 ),
 
+-- New actor without SCD records
 new_record AS (
     SELECT
         ty.actor,
@@ -90,6 +115,8 @@ new_record AS (
     WHERE ly.actorid IS NULL
 )
 
+-- Union everything to have full track of quality and active status
+-- with the latest data 
 SELECT * FROM historical_scd
 UNION
 SELECT * FROM unchanged_record
