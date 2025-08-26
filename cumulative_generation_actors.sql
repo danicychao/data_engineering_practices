@@ -33,9 +33,9 @@ WITH last_year AS (
 
 /*
  * Inserted columns:
- *   - actor, actorid: Inherit from last year or use this year's name and id if actor is new
+ *   - actor, actorid: Inherit from previous year or use this year's name and id if actor is new
  *   - films: Concatenation of film metrics
- *   - quality_class: Recompute average rating or inherit from last year if no film this year
+ *   - quality_class: Recompute average rating or inherit from previous year if no film this year
  *   - is_active: True if actor has films this year
  *   - current_year: Snapshot of year
  */
