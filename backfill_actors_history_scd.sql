@@ -1,4 +1,18 @@
+/*
+ * Backfill query for actors_history_scd table
+ *
+ * Purpose:
+ *   Populate the entire actors_history_scd table
+ * 
+ * Tables:
+ *   - actors_history_scd (target table)
+ *   - actors (source table)
+ */
+
+
 INSERT INTO actors_history_scd
+
+-- Compare performance quality and active status with previous year
 WITH previous AS (
   SELECT
     actor,
@@ -10,7 +24,9 @@ WITH previous AS (
     current_year
   FROM actors
 ),
-change_indicator AS (
+
+-- Flag change (1) if performance quality or active status differ from previous year
+  change_indicator AS (
   SELECT
     actor,
     actorid,
@@ -24,13 +40,22 @@ change_indicator AS (
     current_year
   FROM previous
 ),
-streak_indicator AS (
+
+-- Use running sum to track the state of quality and active status
+  streak_indicator AS (
   SELECT
     *,
     SUM(change) OVER (PARTITION BY actorid ORDER BY current_year) as change_streak
   FROM change_indicator
 )
 
+/*
+ * Final SELECT to insert columns:
+ *   - Using GROUP BY actorid, change_streak to aggregate records with
+ *     same state of quality and active status
+ *   - start_date: first year of a state (of quality and active status)
+ *   - end_date: last year of a state
+ */
 
 SELECT
   MAX(actor),
