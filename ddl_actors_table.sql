@@ -12,6 +12,8 @@
  * Types:
  *   - film_stat: Composite type for film metrics
  *   - quality_class: Enumeration for actor performance quality
+ *
+ * Data will be inserted into actors table by cumulative_generation_actors.sql.
  */
 
 CREATE TYPE film_stat AS (
