@@ -1,5 +1,5 @@
 /*
- * Actors Table DDL
+ * actors Table DDL
  *
  * Purpose:
  *   Create a table, actors, including actors' names, 
