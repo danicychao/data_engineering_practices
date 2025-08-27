@@ -61,7 +61,8 @@ user_id_browser AS (
     GROUP BY 1, 2
 )
 
--- Aggregate multiple browser-active dates columns into one by user id
+-- Aggregate multiple browser-active dates columns 
+-- into one JSON column by user id
 -- and insert into the user_devices_cumulated table
 SELECT
     user_id as user_id,
