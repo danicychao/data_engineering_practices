@@ -1,5 +1,6 @@
 /*
  * Incremental query for host_activity_reduced table
+ * (hit_array)
  *
  * Purpose:
  *   Update host_activity_reduced table day by day
