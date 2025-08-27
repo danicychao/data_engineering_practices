@@ -28,7 +28,7 @@ daily_aggregate AS (
     SELECT
         host,
         DATE(event_time) as cur_date,
-        COUNT(1) as num_acts
+        COUNT(1) as num_acts -- number of hits
     FROM dedup
     WHERE DATE(event_time) = DATE('2023-01-03')
         AND row_num = 1
@@ -58,6 +58,7 @@ SELECT
     'hit_array' as metric_name,
     CASE 
         WHEN y.metric_array IS NULL THEN
+            -- Fill zero in the previous dates without hit
             ARRAY_FILL(0, ARRAY[d.cur_date - DATE(DATE_TRUNC('month', d.cur_date))]) || ARRAY[d.num_acts]
         WHEN d.num_acts IS NULL THEN y.metric_array
         ELSE y.metric_array || d.num_acts
@@ -65,5 +66,7 @@ SELECT
 FROM yesterday_array y 
 FULL OUTER JOIN daily_aggregate d ON y.host = d.host
 
+-- Update hit_array instead of insert new row
+-- when the array already exists
 ON CONFLICT(host, month_start, metric_name)
 DO UPDATE SET metric_array = EXCLUDED.metric_array
