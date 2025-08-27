@@ -1,9 +1,23 @@
+/*
+ * datelist_int generation query
+ *
+ * Purpose:
+ *   Convert active dates in device_activity_datelist column
+ *   in device_activity_datelist table into datelist_int column, 
+ *   which tracks both active dates and number of active days.
+ * 
+ * Tables:
+ *   - device_activity_datelist (source table)
+ */
+
+-- Generate all the dates in the month
 WITH series AS (
     SELECT * FROM
         generate_series(DATE('2023-01-01'), DATE('2023-01-31'), INTERVAL '1 DAY')
         as date_series
 ),
 
+-- Extract browser type and active date from the JSONB column device_activity_datelist
 unnest_browser AS (
     SELECT
         user_id,
@@ -15,6 +29,8 @@ unnest_browser AS (
         jsonb_array_elements_text(t.date_array) AS dates
 ),
 
+-- Convert active dates into a unique bitmask integer (power of 2)
+-- based on their days in the month
 placeholder AS (
     SELECT
         u.user_id,
@@ -31,6 +47,7 @@ placeholder AS (
     CROSS JOIN series s
 ),
 
+-- Sum up the bitmask integer to encode active dates and number of active days
 placeholder_sum AS (
     SELECT
         user_id,
@@ -41,6 +58,11 @@ placeholder_sum AS (
     GROUP BY user_id, browser_type
 )
 
+/*
+ * Final SELECT:
+ *   Aggregate multiple browser-encoded bitmask integers 
+ *   into one JSON column by user id
+ */
 SELECT
     user_id,
     JSON_OBJECT_AGG(browser_type, date_int) as datelist_int
