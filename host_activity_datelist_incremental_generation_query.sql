@@ -7,7 +7,7 @@
  *   day by day.
  * 
  *   host_activity_datelist column tracks 
- *   dates a host is experiencing any activity.
+ *   dates when host is experiencing any activity.
  * 
  * Tables:
  *   - hosts_cumulated (target table)
