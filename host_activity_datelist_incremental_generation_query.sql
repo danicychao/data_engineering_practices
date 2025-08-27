@@ -3,7 +3,7 @@
  *
  * Purpose:
  *   Update hosts_cumulated table by generating 
- *   and extendinghost_activity_datelist column 
+ *   and extending host_activity_datelist column 
  *   day by day in hosts_cumulated table.
  * 
  *   host_activity_datelist column tracks 
