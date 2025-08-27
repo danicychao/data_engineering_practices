@@ -1,4 +1,19 @@
+/*
+ * Incremental query for host_activity_reduced table
+ *
+ * Purpose:
+ *   Update host_activity_reduced table day by day
+ *   by generating and extending array of 
+ *   number of hits in metric_array column (hit_array). 
+ * 
+ * Tables:
+ *   - host_activity_reduced (target table)
+ *   - events (source table)
+ */
+
 INSERT INTO host_activity_reduced
+
+-- Deduplicate the events table
 WITH dedup AS (
     SELECT
         *,
@@ -7,6 +22,7 @@ WITH dedup AS (
     WHERE host IS NOT NULL
 ),
 
+-- Extract number of hits on the day
 daily_aggregate AS (
     SELECT
         host,
@@ -19,12 +35,22 @@ daily_aggregate AS (
     GROUP BY host, cur_date
 ),
 
+-- Snapshot of hit_array in the same month
 yesterday_array AS (
     SELECT * FROM host_activity_reduced
     WHERE month_start = DATE('2023-01-01')
       AND metric_name = 'hit_array'
 )
 
+/*
+ * Final SELECT to insert hit_array
+ *   - hit_array:
+ *       * If no prior records of hit_array,
+ *         initialize the array with number of hits on the day, 
+ *         filling zero paddling up to the day 
+ *       * If no hit on the day, inherit from yesterday's hit_array
+ *       * Otherwise, append number of hits on the day to hit_array 
+ */
 SELECT
     COALESCE(y.host, d.host) as host,
     COALESCE(y.month_start, DATE(DATE_TRUNC('month', d.cur_date))) as month_start,
